@@ -20,7 +20,7 @@ namespace MagicHome
     {
         //Properties
         ///<summary>How long will the discovery take in milliseconds.</summary>
-        public static int Timeout { get; set; } = 1000;
+        public static int Timeout { get; set; } = 10000;
 
         private static IPEndPoint ep = new IPEndPoint(IPAddress.Any, DISCOVERY_PORT);
         private static UdpClient socket = new UdpClient(DISCOVERY_PORT);

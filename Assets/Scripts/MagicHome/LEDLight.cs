@@ -231,22 +231,22 @@ namespace MagicHome
             => await SetColorAsync(white, white, white);
 
 
-        /* TODO.
         /// <summary> Sets the brightness of the light. </summary>
         /// <param name="brightness"> The level of brightness, from 0 to 100. </param>
-        public async Task SetBrightnessAsync(byte brightness)
+        public async Task SetBrightnessAsync(float brightness)
         {
             if (brightness > 100) throw new MagicHomeException("Brightness value cannot be more than 100");
             if (Mode == LightMode.Color)
-                await SetColorAsync(
-                    Convert.ToByte(Color.Red * (brightness / Brightness)),
-                    Convert.ToByte(Color.Green * (brightness / Brightness)),
-                    Convert.ToByte(Color.Blue * (brightness / Brightness))
-                    );
+            {
+                byte red = Convert.ToByte(Color.Red * brightness);
+                byte green = Convert.ToByte(Color.Green * brightness);
+                byte blue = Convert.ToByte(Color.Blue * brightness);
+                await SetColorAsync(red, green, blue);
+            }
             else if (Mode == LightMode.WarmWhite)
                 await SetWarmWhiteAsync(Convert.ToByte(WarmWhite * brightness / Brightness));
             UpdateBrightness();
-        }*/
+        }
 
         /// <summary> Sets a preset pattern. </summary>
         /// <param name="speed"> The speed of the pattern from 0 to 100. </param>
@@ -374,6 +374,8 @@ namespace MagicHome
             else if (Mode == LightMode.WarmWhite)
                 Brightness = Utilis.DetermineBrightness(WarmWhite, WarmWhite, WarmWhite);
         }
+
+        public void UpdateBrightness(byte brightness) => Brightness = brightness;
 
         /// <summary> Sends data to the light. </summary>
         private async Task SendDataAsync(params byte[] _data)

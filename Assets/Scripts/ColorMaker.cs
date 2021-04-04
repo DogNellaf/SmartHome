@@ -5,21 +5,30 @@ using UnityEngine.UI;
 using MagicHome;
 public class ColorMaker : MonoBehaviour
 {
-    [SerializeField] string address = "192.168.88.160";
     [SerializeField] float red = 1;
     [SerializeField] float green = 1;
     [SerializeField] float blue = 1;
+    [SerializeField] float brightness = 1;
     [SerializeField] Image currentImage;
     [SerializeField] Sprite turnOn;
     [SerializeField] Sprite turnOff;
 
-    private LEDLight light;
+    [SerializeField] private TcpServer server;
 
     public float Red
     {
         set
         {
             red = value;
+            ReloadImageColor();
+        }
+    }
+
+    public float Brightness
+    {
+        set
+        {
+            brightness = value;
             ReloadImageColor();
         }
     }
@@ -44,22 +53,22 @@ public class ColorMaker : MonoBehaviour
 
     private async void ReloadImageColor()
     {
-        currentImage.color = new UnityEngine.Color(red, green, blue);
+        currentImage.color = new UnityEngine.Color(red, green, blue, brightness);
         await SendColor();
     }
 
     public async void TurnAround()
     {
-        if (light.Power)
+        if (server.Light.Power)
         {
             ChangeSprite(turnOff);
-            await light.TurnOffAsync();
+            await server.Light.TurnOffAsync();
             Debug.Log("Лента отключена");
         }
         else
         {
             ChangeSprite(turnOn);
-            await light.TurnOnAsync();
+            await server.Light.TurnOnAsync();
             Debug.Log("Лента включена");
         }
 
@@ -67,7 +76,7 @@ public class ColorMaker : MonoBehaviour
 
     private void SetStartButtonSprite()
     {
-        if (light.Power)
+        if (server.Light.Power)
             ChangeSprite(turnOff);
         else
             ChangeSprite(turnOn);
@@ -75,44 +84,25 @@ public class ColorMaker : MonoBehaviour
 
     private void ChangeSprite(Sprite _sprite) => GameObject.Find(@"Turn On\Off").GetComponent<Button>().image.sprite = _sprite;
 
-    public async void Test()
-    {
-        var discoveredLights = await MagicHome.LEDLight.DiscoverAsync();
-
-        if (true)
-        {
-
-        }
-    }
-
     // Start is called before the first frame update
     public void Start()
     {
-        ConnectToLed();
-        SetStartButtonSprite();
-        ReloadImageColor();
-    }
-
-    private void ConnectToLed()
-    {
-        light = new LEDLight(address);
-
-        // Connect.
-        light.ConnectAsync();
-        Debug.Log("Соединение со светодиодной лентой прошло успешно");
-        red = light.Color.Red / 255;
-        blue = light.Color.Blue / 255;
-        green = light.Color.Green / 255;
+        if (server.Light.Connected)
+        {
+            SetStartButtonSprite();
+            ReloadImageColor();
+        }
 
     }
 
     private async Task SendColor()
     {
-        if (light.Power)
+        if (server.Light.Power)
         {
             (byte r, byte g, byte b) color = ConvertColor();
-            Debug.Log("Передан цвет в светодиодную ленту");
-            await light.SetColorAsync(color.r, color.g, color.b);
+            //Debug.Log("Передан цвет в светодиодную ленту");
+            await server.Light.SetColorAsync(color.r, color.g, color.b);
+            await server.Light.SetBrightnessAsync(brightness);
         }
 
     }
@@ -122,12 +112,6 @@ public class ColorMaker : MonoBehaviour
         byte r = (byte)Mathf.Round(red * 255);
         byte g = (byte)Mathf.Round(green * 255);
         byte b = (byte)Mathf.Round(blue * 255);
-        return (r,g,b);
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+        return (g,r,b);
     }
 }

@@ -14,7 +14,7 @@ public class SpotTurn : MonoBehaviour
         Socket.ReceiveTimeout = 1000;
 
         IPAddress Ip = IPAddress.Parse(ip);
-        Ep = new IPEndPoint(Ip, PORT);
+        //Ep = new IPEndPoint(Ip, PORT);
     }
 
     // Update is called once per frame
